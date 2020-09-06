@@ -43,7 +43,6 @@ func main() {
 			return
 		}
 		delayTime = time
-		fmt.Printf("Time: %d", delayTime)
 	}
 
 	httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
