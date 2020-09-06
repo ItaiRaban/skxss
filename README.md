@@ -1,5 +1,6 @@
 # skxss
 Sleep kxss
+
 Added delay option to [@tomnomnom](https://github.com/tomnomnom/)'s tool, and used the adaption of [Emoe](https://github.com/Emoe). 
 
 
@@ -12,10 +13,11 @@ All the credits goes to:
 
 # Usage
 
-```cat domain.txt | skxss [Seconds]```
+```cat domain.txt | skxss [Millieconds]```
 
 For example:
-```cat domain.txt | skxss 5``` - will wait 5 seconds between each url's scan
+
+```cat domain.txt | skxss 2000``` - will wait 2 seconds between each url's scan
 
 
 # Any Problems?
