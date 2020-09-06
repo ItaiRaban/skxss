@@ -13,7 +13,11 @@ All the credits goes to:
 # Usage
 
 ```cat domain.txt | skxss [Seconds]```
+
 For example:
 ```cat domain.txt | skxss 5``` - will wait 5 seconds between each url's scan
-##Any Problems?
+
+
+#Any Problems?
+
 Feel free to send me a massege on [Twitter](https://twitter.com/itairaban)
