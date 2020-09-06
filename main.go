@@ -12,12 +12,26 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"strconv"
+	// "strconv"
+	"errors"
+	"flag"
 )
 
 type paramCheck struct {
 	url   string
 	param string
+}
+
+
+type arrayFlags []string
+
+func (i *arrayFlags) String() string {
+    return fmt.Sprint(*i)
+}
+
+func (i *arrayFlags) Set(value string) error {
+	*i = append(*i, value)
+	return nil
 }
 
 var transport = &http.Transport{
@@ -33,17 +47,24 @@ var httpClient = &http.Client{
 	Transport: transport,
 }
 
-func main() {
-	argsWithoutProg := os.Args[1:]
-	var delayTime int = 0;
 
-	if len(argsWithoutProg) == 1 {
-		time, err := strconv.Atoi(argsWithoutProg[0])
-		if err != nil {
-			return
-		}
-		delayTime = time
-	}
+var headers arrayFlags
+
+func main() {
+	// argsWithoutProg := os.Args[1:]
+	// var delayTime int = 0;
+
+	var delayTime = flag.Int("d", 0, "Duration of the delay between urls scans (in milliseconds)")
+	flag.Var(&headers, "h", "Add Header. Usage: \"[HeaderName]: [HeaderContent]\"")
+	flag.Parse()
+
+	// if len(argsWithoutProg) == 1 {
+	// 	time, err := strconv.Atoi(argsWithoutProg[0])
+	// 	if err != nil {
+	// 		return
+	// 	}
+	// 	delayTime = time
+	// }
 
 	httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
@@ -53,7 +74,7 @@ func main() {
 
 	initialChecks := make(chan paramCheck, 40)
 
-	appendChecks := makePool(initialChecks, delayTime, func(c paramCheck, output chan paramCheck) {
+	appendChecks := makePool(initialChecks, *delayTime, func(c paramCheck, output chan paramCheck) {
 		reflected, err := checkReflected(c.url)
 		if err != nil {
 			//fmt.Fprintf(os.Stderr, "error from checkReflected: %s\n", err)
@@ -71,7 +92,7 @@ func main() {
 		}
 	})
 
-	charChecks := makePool(appendChecks, delayTime, func(c paramCheck, output chan paramCheck) {
+	charChecks := makePool(appendChecks, *delayTime, func(c paramCheck, output chan paramCheck) {
 		wasReflected, err := checkAppend(c.url, c.param, "iy3j4h234hjb23234")
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error from checkAppend for url %s with param %s: %s", c.url, c.param, err)
@@ -83,7 +104,7 @@ func main() {
 		}
 	})
 
-	done := makePool(charChecks, delayTime, func(c paramCheck, output chan paramCheck) {
+	done := makePool(charChecks, *delayTime, func(c paramCheck, output chan paramCheck) {
 		output_of_url := []string{c.url, c.param}
 		for _, char := range []string{"\"", "'", "<", ">"} {
 			wasReflected, err := checkAppend(c.url, c.param, "aprefix"+char+"asuffix")
@@ -103,7 +124,7 @@ func main() {
 
 	for sc.Scan() {
 		initialChecks <- paramCheck{url: sc.Text()}
-		time.Sleep(time.Duration(delayTime) * time.Millisecond) // Waits between each url scaning
+		time.Sleep(time.Duration(*delayTime) * time.Millisecond) // Waits between each url scaning
 	}
 
 	close(initialChecks)
@@ -118,9 +139,16 @@ func checkReflected(targetURL string) ([]string, error) {
 	if err != nil {
 		return out, err
 	}
-
-	// temporary. Needs to be an option
-	req.Header.Add("User-Agent", "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.100 Safari/537.36")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.100 Safari/537.36")
+	for _, header := range headers { // Adds the header to the packet
+		headerName, headerContent, err := splitHeader(header)
+		if err != nil {
+			// fmt.Fprintf(os.Stderr, "HeaderError: %s\n", err)
+			continue
+		}
+		// fmt.Printf("Name: %s | Content: %s\n", headerName, headerContent)
+		req.Header.Add(headerName, headerContent)
+	}
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -223,4 +251,14 @@ func makePool(input chan paramCheck, delayTime int, fn workerFunc) chan paramChe
 	}()
 
 	return output
+}
+
+func splitHeader(header string) (string, string, error) {
+	s := strings.SplitN(header, ":", 2) // Splits only the first ':'
+	if len(s) != 2 {
+		return "", "", errors.New("Invalid header \"" + header + "\"")
+	}
+	headerName := s[0]
+	headerContent := s[1]
+	return headerName, headerContent, nil
 }
