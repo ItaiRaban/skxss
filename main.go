@@ -103,7 +103,7 @@ func main() {
 
 	for sc.Scan() {
 		initialChecks <- paramCheck{url: sc.Text()}
-		time.Sleep(time.Duration(delayTime) * time.Second) // Waits between each url scaning
+		time.Sleep(time.Duration(delayTime) * time.Millisecond) // Waits between each url scaning
 	}
 
 	close(initialChecks)
