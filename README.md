@@ -1,24 +1,27 @@
-# skxss
-Sleep kxss
-Added delay option to [@tomnomnom](https://github.com/tomnomnom/)'s tool, and used the adaption of [Emoe](https://github.com/Emoe). 
+# kxss
+[1.1]: http://i.imgur.com/tXSoThF.png
+[1]: https://twitter.com/TobiunddasMoe
+This a adaption of tomnomnom's kxss tool with a different output format. I didn't want to fork his whole Hacks-Repository so created my Own ;-)
 
+All Credit for this Code goes to [Tomnomnom](https://github.com/tomnomnom/)
 
-All the credits goes to:
+## Changes to original kxss
+I changed the output format of kxss to make it better grepable for my recon script. My new Output Looks like this:
+```
+URL: https://www.**********.***/event_register.php?event=177 Param: event Unfiltered: [" ' < >]
+```
 
-[@tomnomnom](https://github.com/tomnomnom/) - Creator of [kxss](https://github.com/tomnomnom/hacks/tree/master/kxss)
+## Installation
+To install this Tool please use the following Command:
+```
+go get github.com/Emoe/kxss
+```
 
-[@Emoe](https://github.com/Emoe) - Creator of [kxss Adaption](https://github.com/Emoe/kxss)
+## Usage
+To run this script use the following command:
+```
+echo "https://www.**********.***/event_register.php?event=177" | kxss
+```
 
-
-# Usage
-
-```cat domain.txt | skxss [Seconds]```
-
-For example:
-
-```cat domain.txt | skxss 5``` - will wait 5 seconds between each url's scan
-
-
-##Any Problems?
-
-Feel free to send me a massege on [Twitter](https://twitter.com/itairaban)
+## Question
+If you have an question you can create an Issue or ping me on [![alt text][1.1]][1]
