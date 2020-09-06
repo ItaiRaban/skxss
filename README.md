@@ -4,10 +4,8 @@ Added delay option to [@tomnomnom](https://github.com/tomnomnom/)'s tool, and us
 
 
 All the credits goes to:
-
-[@tomnomnom](https://github.com/tomnomnom/) - Creator
-
-[Emoe](https://github.com/Emoe) - Creator of [kxss Adaption](https://github.com/Emoe/kxss)
+[@tomnomnom](https://github.com/tomnomnom/) - Creator of [kxss](https://github.com/tomnomnom/hacks/tree/master/kxss)
+[@Emoe](https://github.com/Emoe) - Creator of [kxss Adaption](https://github.com/Emoe/kxss)
 
 
 # Usage
