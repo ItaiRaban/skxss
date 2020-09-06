@@ -17,3 +17,8 @@ All the credits goes to:
 For example:
 
 ```cat domain.txt | skxss 5``` - will wait 5 seconds between each url's scan
+
+
+##Any Problems?
+
+Feel free to send me a massege on [Twitter](https://twitter.com/itairaban)
