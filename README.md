@@ -1,7 +1,7 @@
 # skxss
 Sleep kxss
 
-Added delay option to [@tomnomnom](https://github.com/tomnomnom/)'s tool, and used the adaption of [Emoe](https://github.com/Emoe). 
+Added delay option and headers adding to [@tomnomnom](https://github.com/tomnomnom/)'s great tool, and used the adaption of [Emoe](https://github.com/Emoe). 
 
 
 All the credits goes to:
@@ -13,12 +13,15 @@ All the credits goes to:
 
 # Usage
 
-```cat domain.txt | skxss [Millieconds]```
+```cat domain.txt | skxss -d [Millieconds] -h "<HeaderName>: <HeaderContent>" -h "<SecondHeaderName>: <SecondHeaderContent>"```
 
 For example:
 
-```cat domain.txt | skxss 2000``` - will wait 2 seconds between each url's scan
+```cat domain.txt | skxss -d 2000``` - will wait 2 seconds between each url's scan, without any aditional headers
 
+```cat domain.txt | skxss -d 500 -h "UserAgent: MyUserAgent"``` - will wait half a second between each url's scan, and add the header ```UserAgent: MyUserAgent```
+
+Default delay is 0 (Without ```-d``` flag)
 
 # Any Problems?
 
