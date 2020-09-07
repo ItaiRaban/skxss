@@ -11,13 +11,18 @@ All the credits goes to:
 [@Emoe](https://github.com/Emoe) - Creator of [kxss Adaption](https://github.com/Emoe/kxss)
 
 
+# Installation
+
+```go get github.com/ItaiRaban/skxss```
+
+
 # Usage
 
 ```cat domain.txt | skxss -d [Millieconds] -h "<HeaderName>: <HeaderContent>" -h "<SecondHeaderName>: <SecondHeaderContent>"```
 
 For example:
 
-```cat domain.txt | skxss -d 2000``` - will wait 2 seconds between each url's scan, without any aditional headers
+```cat domain.txt | skxss -d 2000``` - will wait 2 seconds between each url's scan, without any additional headers
 
 ```cat domain.txt | skxss -d 500 -h "UserAgent: MyUserAgent"``` - will wait half a second between each url's scan, and add the header ```UserAgent: MyUserAgent```
 
