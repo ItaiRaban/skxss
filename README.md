@@ -30,4 +30,4 @@ Default delay is 0 (Without ```-d``` flag)
 
 # Any Problems?
 
-Feel free to send me a massege on [Twitter](https://twitter.com/itairaban)
+Feel free to send me a massege on [Twitter](https://twitter.com/0x17A1)
