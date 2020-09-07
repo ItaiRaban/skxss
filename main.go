@@ -12,7 +12,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	// "strconv"
 	"errors"
 	"flag"
 )
@@ -51,20 +50,9 @@ var httpClient = &http.Client{
 var headers arrayFlags
 
 func main() {
-	// argsWithoutProg := os.Args[1:]
-	// var delayTime int = 0;
-
 	var delayTime = flag.Int("d", 0, "Duration of the delay between urls scans (in milliseconds)")
 	flag.Var(&headers, "h", "Add Header. Usage: \"[HeaderName]: [HeaderContent]\"")
 	flag.Parse()
-
-	// if len(argsWithoutProg) == 1 {
-	// 	time, err := strconv.Atoi(argsWithoutProg[0])
-	// 	if err != nil {
-	// 		return
-	// 	}
-	// 	delayTime = time
-	// }
 
 	httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
@@ -74,7 +62,7 @@ func main() {
 
 	initialChecks := make(chan paramCheck, 40)
 
-	appendChecks := makePool(initialChecks, *delayTime, func(c paramCheck, output chan paramCheck) {
+	appendChecks := makePool(initialChecks, func(c paramCheck, output chan paramCheck) {
 		reflected, err := checkReflected(c.url)
 		if err != nil {
 			//fmt.Fprintf(os.Stderr, "error from checkReflected: %s\n", err)
@@ -92,7 +80,7 @@ func main() {
 		}
 	})
 
-	charChecks := makePool(appendChecks, *delayTime, func(c paramCheck, output chan paramCheck) {
+	charChecks := makePool(appendChecks, func(c paramCheck, output chan paramCheck) {
 		wasReflected, err := checkAppend(c.url, c.param, "iy3j4h234hjb23234")
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error from checkAppend for url %s with param %s: %s", c.url, c.param, err)
@@ -104,7 +92,7 @@ func main() {
 		}
 	})
 
-	done := makePool(charChecks, *delayTime, func(c paramCheck, output chan paramCheck) {
+	done := makePool(charChecks, func(c paramCheck, output chan paramCheck) {
 		output_of_url := []string{c.url, c.param}
 		for _, char := range []string{"\"", "'", "<", ">"} {
 			wasReflected, err := checkAppend(c.url, c.param, "aprefix"+char+"asuffix")
@@ -140,13 +128,16 @@ func checkReflected(targetURL string) ([]string, error) {
 		return out, err
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.100 Safari/537.36")
-	for _, header := range headers { // Adds the header to the packet
+	for _, header := range headers { // Adds the headers to the http packet
 		headerName, headerContent, err := splitHeader(header)
 		if err != nil {
 			// fmt.Fprintf(os.Stderr, "HeaderError: %s\n", err)
 			continue
 		}
-		// fmt.Printf("Name: %s | Content: %s\n", headerName, headerContent)
+		// Trims the whitespaces
+		headerName = strings.TrimSpace(headerName)
+		headerContent = strings.TrimSpace(headerContent)
+		// fmt.Printf("Name: =>%s<= | Content: =>%s<=\n", headerName, headerContent)
 		req.Header.Add(headerName, headerContent)
 	}
 
@@ -228,7 +219,7 @@ func checkAppend(targetURL, param, suffix string) (bool, error) {
 
 type workerFunc func(paramCheck, chan paramCheck)
 
-func makePool(input chan paramCheck, delayTime int, fn workerFunc) chan paramCheck {
+func makePool(input chan paramCheck, fn workerFunc) chan paramCheck {
 	var wg sync.WaitGroup
 
 	output := make(chan paramCheck)
@@ -236,9 +227,6 @@ func makePool(input chan paramCheck, delayTime int, fn workerFunc) chan paramChe
 		wg.Add(1)
 		go func() {
 			for c := range input {
-				// fmt.Fprintf(os.Stderr, "Waiting: %d", delayTime)
-				// time.Sleep(time.Duration(delayTime) * time.Second)
-				// fmt.Fprintf(os.Stderr, "Done Waiting")
 				fn(c, output)
 			}
 			wg.Done()
