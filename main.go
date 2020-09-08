@@ -1,4 +1,4 @@
-package main
+ package main
 
 import (
 	"bufio"
@@ -97,7 +97,7 @@ func main() {
 		for _, char := range []string{"\"", "'", "<", ">"} {
 			wasReflected, err := checkAppend(c.url, c.param, "aprefix"+char+"asuffix")
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "error from checkAppend for url %s with param %s with %s: %s", c.url, c.param, char, err)
+				// fmt.Fprintf(os.Stderr, "error from checkAppend for url %s with param %s with %s: %s", c.url, c.param, char, err)
 				continue
 			}
 
@@ -105,7 +105,7 @@ func main() {
 				output_of_url = append(output_of_url, char)
 			}
 		}
-		if len(output_of_url) >= 2 {
+		if len(output_of_url) > 2 {
 			fmt.Printf("URL: %s Param: %s Unfiltered: %v \n", output_of_url[0] , output_of_url[1],output_of_url[2:])
 		}
 	})
