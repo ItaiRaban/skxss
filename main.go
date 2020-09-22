@@ -59,7 +59,7 @@ func main() {
 	flag.Var(&headers, "h", "Add Header. Usage: \"[HeaderName]: [HeaderContent]\"")
 	flag.Parse()
 
-	SetupCloseHandler()
+	// SetupCloseHandler()
 
 	if *paramMin > 0 {
 		// Create result.txt
