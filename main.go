@@ -14,6 +14,8 @@ import (
 	"time"
 	"errors"
 	"flag"
+	"os/signal"
+	"syscall"
 )
 
 type paramCheck struct {
@@ -48,11 +50,26 @@ var httpClient = &http.Client{
 
 
 var headers arrayFlags
+var lastUrlChecked string
 
 func main() {
+	var resultFile *os.File;
 	var delayTime = flag.Int("d", 0, "Duration of the delay between urls scans (in milliseconds)")
+	var paramMin = flag.Int("s", 0, "Saves urls with [s] unflitered chars to result.txt")
 	flag.Var(&headers, "h", "Add Header. Usage: \"[HeaderName]: [HeaderContent]\"")
 	flag.Parse()
+
+	SetupCloseHandler()
+
+	if *paramMin > 0 {
+		// Create result.txt
+		resultFile, err := os.OpenFile("result.txt", os.O_APPEND|os.O_CREATE, 0600)
+		if err != nil {
+		    panic(err)
+		}
+
+		defer resultFile.Close()
+	}
 
 	httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
@@ -94,7 +111,7 @@ func main() {
 
 	done := makePool(charChecks, func(c paramCheck, output chan paramCheck) {
 		output_of_url := []string{c.url, c.param}
-		for _, char := range []string{"\"", "'", "<", ">"} {
+		for _, char := range []string{"\"", "'", "<", ">", "\\"} {
 			wasReflected, err := checkAppend(c.url, c.param, "aprefix"+char+"asuffix")
 			if err != nil {
 				// fmt.Fprintf(os.Stderr, "error from checkAppend for url %s with param %s with %s: %s", c.url, c.param, char, err)
@@ -106,7 +123,17 @@ func main() {
 			}
 		}
 		if len(output_of_url) > 2 {
-			fmt.Printf("URL: %s Param: %s Unfiltered: %v \n", output_of_url[0] , output_of_url[1],output_of_url[2:])
+			unfliteredChars := output_of_url[2:]
+			
+			if len(unfliteredChars) > 1 || !Find(unfliteredChars, "\\"){
+				fmt.Printf("URL: %s Param: %s Unfiltered: %v \n", output_of_url[0] , output_of_url[1],output_of_url[2:])
+			} 
+			
+			if *paramMin > 0 && len(unfliteredChars) >= *paramMin {
+				// Write to the file
+				// fmt.Println("Writing to the file")
+				fmt.Fprintf(resultFile, fmt.Sprintf("URL: %s Param: %s Unfiltered: %v \n", output_of_url[0] , output_of_url[1],output_of_url[2:])) // need to fix
+			}
 		}
 	})
 
@@ -122,6 +149,8 @@ func main() {
 func checkReflected(targetURL string) ([]string, error) {
 
 	out := make([]string, 0)
+	
+	lastUrlChecked = targetURL 
 
 	req, err := http.NewRequest("GET", targetURL, nil)
 	if err != nil {
@@ -249,4 +278,49 @@ func splitHeader(header string) (string, string, error) {
 	headerName := s[0]
 	headerContent := s[1]
 	return headerName, headerContent, nil
+}
+
+func SetupCloseHandler() {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	quit := make(chan bool)		
+	go func() {
+		for {
+			<-c
+			fmt.Println("\r- Ctrl+C pressed in Terminal")
+			fmt.Println("Would you like to exit? [y/n]")
+			
+			go func() { // prints the last checked url
+			    for {
+			        select {
+			        case <-quit:
+			            return
+			        default:
+			            fmt.Printf("\rLast url: %s", lastUrlChecked)
+			        }
+			    }
+			}()
+			
+			// wait for input
+			var userSelection string
+			_, err := fmt.Scanln(&userSelection)
+			if err != nil {
+				
+			}
+			fmt.Println("userSelection: ", userSelection)
+			quit <- true
+			os.Exit(0)
+		}
+	}()
+}
+
+// Find takes a slice and looks for an element in it. If found it will
+// return true, otherwise false
+func Find(slice []string, val string) (bool) {
+    for _, item := range slice {
+        if item == val {
+            return true
+        }
+    }
+    return false
 }
